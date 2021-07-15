@@ -67,10 +67,12 @@
 #![deny(missing_docs)]
 
 use capsules::virtual_alarm::VirtualMuxAlarm;
+use capsules::i2c_master_slave_driver::I2CMasterSlaveDriver;
 use kernel::common::dynamic_deferred_call::{DynamicDeferredCall, DynamicDeferredCallClientState};
 use kernel::component::Component;
 use kernel::hil::led::LedLow;
 use kernel::hil::time::Counter;
+use kernel::hil::i2c::{I2CMaster, I2CSlave};
 #[allow(unused_imports)]
 use kernel::{capabilities, create_capability, debug, debug_gpio, debug_verbose, static_init};
 use nrf52832::gpio::Pin;
@@ -100,6 +102,10 @@ const UART_RXD: Pin = Pin::P0_08;
 const _SPI_MOSI: Pin = Pin::P0_22;
 const _SPI_MISO: Pin = Pin::P0_23;
 const _SPI_CLK: Pin = Pin::P0_24;
+
+// I2C pins
+const I2C_SDA_PIN: Pin = Pin::P0_26;
+const I2C_SCL_PIN: Pin = Pin::P0_27;
 
 /// UART Writer
 pub mod io;
@@ -156,6 +162,7 @@ pub struct Platform {
         'static,
         capsules::virtual_alarm::VirtualMuxAlarm<'static, nrf52832::rtc::Rtc<'static>>,
     >,
+    i2c_master_slave: &'static capsules::i2c_master_slave_driver::I2CMasterSlaveDriver<'static>,
 }
 
 impl kernel::Platform for Platform {
@@ -174,6 +181,7 @@ impl kernel::Platform for Platform {
             capsules::temperature::DRIVER_NUM => f(Some(self.temp)),
             capsules::analog_comparator::DRIVER_NUM => f(Some(self.analog_comparator)),
             kernel::ipc::DRIVER_NUM => f(Some(&self.ipc)),
+            capsules::i2c_master_slave_driver::DRIVER_NUM => f(Some(self.i2c_master_slave)),
             _ => f(None),
         }
     }
@@ -342,6 +350,32 @@ pub unsafe fn main() {
             .finalize(());
 
     let rng = components::rng::RngComponent::new(board_kernel, &base_peripherals.trng).finalize(());
+    
+    let i2c_master_buffer = static_init!([u8; 32], [0; 32]);
+    let i2c_slave_buffer1 = static_init!([u8; 32], [0; 32]);
+    let i2c_slave_buffer2 = static_init!([u8; 32], [0; 32]);
+
+    let i2c_master_slave = static_init!(
+        I2CMasterSlaveDriver,
+        I2CMasterSlaveDriver::new(
+            &base_peripherals.twi1,
+            i2c_master_buffer,
+            i2c_slave_buffer1,
+            i2c_slave_buffer2,
+            board_kernel.create_grant(
+                capsules::i2c_master_slave_driver::DRIVER_NUM,
+                &memory_allocation_capability
+            ),
+        )
+    );
+    base_peripherals.twi1.configure(
+        nrf52832::pinmux::Pinmux::new(I2C_SCL_PIN as u32),
+        nrf52832::pinmux::Pinmux::new(I2C_SDA_PIN as u32),
+    );
+    base_peripherals.twi1.set_master_client(i2c_master_slave);
+    base_peripherals.twi1.set_slave_client(i2c_master_slave);
+    base_peripherals.twi1.set_speed(nrf52832::i2c::Speed::K400);
+
 
     // Initialize AC using AIN5 (P0.29) as VIN+ and VIN- as AIN0 (P0.02)
     // These are hardcoded pin assignments specified in the driver
@@ -371,6 +405,7 @@ pub unsafe fn main() {
         alarm,
         analog_comparator,
         ipc: kernel::ipc::IPC::new(board_kernel, &memory_allocation_capability),
+        i2c_master_slave,
     };
 
     let _ = platform.pconsole.start();
