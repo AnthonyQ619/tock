@@ -73,7 +73,7 @@ use kernel::component::Component;
 use kernel::hil::led::LedLow;
 use kernel::hil::time::Counter;
 use kernel::hil::i2c::{I2CMaster, I2CSlave};
-//#[allow(unused_imports)]
+#[allow(unused_imports)]
 use kernel::{capabilities, create_capability, debug, debug_gpio, debug_verbose, static_init};
 use nrf52832::gpio::Pin;
 use nrf52832::interrupt_service::Nrf52832DefaultPeripherals;
