@@ -409,9 +409,9 @@ pub unsafe fn main() {
         sam4l::pinmux::Pinmux::new(peripherals.pa[24] as u32),
         sam4l::pinmux::Pinmux::new(peripherals.pa[23] as u32),
     );
-    peripherals.twims0.set_master_client(i2c_master_slave);
-    peripherals.twims0.set_slave_client(i2c_master_slave);
-    peripherals.twims0.set_speed(sam4l::i2c::Speed::K400);
+    peripherals.i2c0.set_master_client(i2c_master_slave);
+    peripherals.i2c0.set_slave_client(i2c_master_slave);
+    peripherals.i2c0.set_speed(sam4l::i2c::Speed::K400);
 
     // CRC
     let crc = components::crc::CrcComponent::new(board_kernel, &peripherals.crccu)
