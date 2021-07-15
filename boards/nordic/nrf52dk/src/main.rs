@@ -229,10 +229,10 @@ pub unsafe fn main() {
             6 => &nrf52832_peripherals.gpio_port[Pin::P0_12],
             7 => &nrf52832_peripherals.gpio_port[Pin::P0_11],
             // Top left header on DK board
-            8 => &nrf52832_peripherals.gpio_port[Pin::P0_27],
-            9 => &nrf52832_peripherals.gpio_port[Pin::P0_26],
-            10 => &nrf52832_peripherals.gpio_port[Pin::P0_02],
-            11 => &nrf52832_peripherals.gpio_port[Pin::P0_25]
+            // 8 => &nrf52832_peripherals.gpio_port[Pin::P0_27],
+            // 9 => &nrf52832_peripherals.gpio_port[Pin::P0_26],
+            8 => &nrf52832_peripherals.gpio_port[Pin::P0_02],
+            9 => &nrf52832_peripherals.gpio_port[Pin::P0_25]
         ),
     )
     .finalize(components::gpio_component_buf!(nrf52832::gpio::GPIOPin));
