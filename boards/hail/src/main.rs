@@ -12,11 +12,13 @@
 use capsules::virtual_alarm::VirtualMuxAlarm;
 use capsules::virtual_i2c::{I2CDevice, MuxI2C};
 use capsules::virtual_spi::VirtualSpiMasterDevice;
+use capsules::i2c_master_slave_driver::I2CMasterSlaveDriver; // New
 use kernel::capabilities;
 use kernel::common::dynamic_deferred_call::{DynamicDeferredCall, DynamicDeferredCallClientState};
 use kernel::component::Component;
 use kernel::hil;
-use kernel::hil::i2c::I2CMaster;
+//use kernel::hil::i2c::I2CMaster;
+use kernel::hil::i2c::{I2CMaster, I2CSlave}; // New
 use kernel::hil::led::LedLow;
 use kernel::hil::Controller;
 use kernel::Platform;
@@ -70,6 +72,7 @@ struct Hail {
     button: &'static capsules::button::Button<'static, sam4l::gpio::GPIOPin<'static>>,
     rng: &'static capsules::rng::RngDriver<'static>,
     ipc: kernel::ipc::IPC<NUM_PROCS>,
+    i2c_master_slave: &'static capsules::i2c_master_slave_driver::I2CMasterSlaveDriver<'static>,
     crc: &'static capsules::crc::Crc<'static, sam4l::crccu::Crccu<'static>>,
     dac: &'static capsules::dac::Dac<'static>,
 }
@@ -96,6 +99,8 @@ impl Platform for Hail {
             capsules::ninedof::DRIVER_NUM => f(Some(self.ninedof)),
 
             capsules::rng::DRIVER_NUM => f(Some(self.rng)),
+	
+	    capsules::i2c_master_slave_driver::DRIVER_NUM => f(Some(self.i2c_master_slave)),	
 
             capsules::crc::DRIVER_NUM => f(Some(self.crc)),
 
@@ -132,16 +137,16 @@ unsafe fn set_pin_primary_functions(peripherals: &Sam4lDefaultPeripherals) {
     peripherals.pa[18].configure(None); //... ACC_INT2 - FXOS8700CQ Interrupt 2
     peripherals.pa[19].configure(None); //... unused
     peripherals.pa[20].configure(None); //... !LIGHT_INT - ISL29035 Light Sensor Interrupt
-                                        // SPI Mode
-    peripherals.pa[21].configure(Some(A)); // D3 - SPI MISO
-    peripherals.pa[22].configure(Some(A)); // D2 - SPI MOSI
-    peripherals.pa[23].configure(Some(A)); // D4 - SPI SCK
-    peripherals.pa[24].configure(Some(A)); // D5 - SPI CS0
-                                           // // I2C Mode
-                                           // peripherals.pa[21].configure(None); // D3
-                                           // peripherals.pa[22].configure(None); // D2
-                                           // peripherals.pa[23].configure(Some(B)); // D4 - TWIMS0 SDA
-                                           // peripherals.pa[24].configure(Some(B)); // D5 - TWIMS0 SCL
+                                           // // SPI Mode
+    					   // peripherals.pa[21].configure(Some(A)); // D3 - SPI MISO
+    					   // peripherals.pa[22].configure(Some(A)); // D2 - SPI MOSI
+    					   // peripherals.pa[23].configure(Some(A)); // D4 - SPI SCK
+    					   // peripherals.pa[24].configure(Some(A)); // D5 - SPI CS0
+    					   // I2C Mode
+    peripherals.pa[21].configure(None); // D3
+    peripherals.pa[22].configure(None); // D2
+    peripherals.pa[23].configure(Some(B)); // D4 - TWIMS0 SDA
+    peripherals.pa[24].configure(Some(B)); // D5 - TWIMS0 SCL
                                            // UART Mode
     peripherals.pa[25].configure(Some(B)); // RX - USART2 RXD
     peripherals.pa[26].configure(Some(B)); // TX - USART2 TXD
@@ -298,11 +303,11 @@ pub unsafe fn main() {
 
     // SPI
     // Set up a SPI MUX, so there can be multiple clients.
-    let mux_spi = components::spi::SpiMuxComponent::new(&peripherals.spi)
-        .finalize(components::spi_mux_component_helper!(sam4l::spi::SpiHw));
+    //let mux_spi = components::spi::SpiMuxComponent::new(&peripherals.spi)
+    //    .finalize(components::spi_mux_component_helper!(sam4l::spi::SpiHw));
     // Create the SPI system call capsule.
-    let spi_syscalls = components::spi::SpiSyscallComponent::new(board_kernel, mux_spi, 0)
-        .finalize(components::spi_syscall_component_helper!(sam4l::spi::SpiHw));
+    //let spi_syscalls = components::spi::SpiSyscallComponent::new(board_kernel, mux_spi, 0)
+    //    .finalize(components::spi_syscall_component_helper!(sam4l::spi::SpiHw));
 
     // LEDs
     let led = components::led::LedsComponent::new(components::led_component_helper!(
@@ -383,6 +388,31 @@ pub unsafe fn main() {
     )
     .finalize(components::gpio_component_buf!(sam4l::gpio::GPIOPin));
 
+    let i2c_master_buffer = static_init!([u8; 32], [0; 32]);
+    let i2c_slave_buffer1 = static_init!([u8; 32], [0; 32]);
+    let i2c_slave_buffer2 = static_init!([u8; 32], [0; 32]);
+
+    let i2c_master_slave = static_init!(
+        I2CMasterSlaveDriver,
+        I2CMasterSlaveDriver::new(
+            &peripherals.twi1,
+            i2c_master_buffer,
+            i2c_slave_buffer1,
+            i2c_slave_buffer2,
+            board_kernel.create_grant(
+                capsules::i2c_master_slave_driver::DRIVER_NUM,
+                &memory_allocation_capability
+            ),
+        )
+    );
+    peripherals.twi1.configure(
+        sam41::pinmux::Pinmux::new(peripherals.pa[24] as u32),
+        sam41::pinmux::Pinmux::new(peripherals.pa[23] as u32),
+    );
+    peripherals.twi1.set_master_client(i2c_master_slave);
+    peripherals.twi1.set_slave_client(i2c_master_slave);
+    peripherals.twi1.set_speed(sam41::i2c::Speed::K400);
+
     // CRC
     let crc = components::crc::CrcComponent::new(board_kernel, &peripherals.crccu)
         .finalize(components::crc_component_helper!(sam4l::crccu::Crccu));
@@ -434,6 +464,7 @@ pub unsafe fn main() {
         button,
         rng,
         ipc: kernel::ipc::IPC::new(board_kernel, &memory_allocation_capability),
+	i2c_master_slave,
         crc,
         dac,
     };
