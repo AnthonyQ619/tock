@@ -395,7 +395,7 @@ pub unsafe fn main() {
     let i2c_master_slave = static_init!(
         I2CMasterSlaveDriver,
         I2CMasterSlaveDriver::new(
-            &peripherals.twi1,
+            &peripherals.twims0,
             i2c_master_buffer,
             i2c_slave_buffer1,
             i2c_slave_buffer2,
@@ -405,13 +405,13 @@ pub unsafe fn main() {
             ),
         )
     );
-    peripherals.twi1.configure(
+    peripherals.twims0.configure(
         sam41::pinmux::Pinmux::new(peripherals.pa[24] as u32),
         sam41::pinmux::Pinmux::new(peripherals.pa[23] as u32),
     );
-    peripherals.twi1.set_master_client(i2c_master_slave);
-    peripherals.twi1.set_slave_client(i2c_master_slave);
-    peripherals.twi1.set_speed(sam41::i2c::Speed::K400);
+    peripherals.twims0.set_master_client(i2c_master_slave);
+    peripherals.twims0.set_slave_client(i2c_master_slave);
+    peripherals.twims0.set_speed(sam41::i2c::Speed::K400);
 
     // CRC
     let crc = components::crc::CrcComponent::new(board_kernel, &peripherals.crccu)
