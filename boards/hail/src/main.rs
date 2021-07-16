@@ -410,7 +410,7 @@ pub unsafe fn main() {
     );
     peripherals.i2c0.set_master_client(i2c_master_slave);
     peripherals.i2c0.set_slave_client(i2c_master_slave);
-    peripherals.i2c0.set_speed(sam4l::i2c::Speed::K400);
+    peripherals.i2c0.set_bus_peed(sam4l::i2c::Speed::Fast400K);
 
     // CRC
     let crc = components::crc::CrcComponent::new(board_kernel, &peripherals.crccu)
