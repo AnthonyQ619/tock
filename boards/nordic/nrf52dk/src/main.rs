@@ -363,7 +363,6 @@ pub unsafe fn main() {
             i2c_slave_buffer1,
             i2c_slave_buffer2,
             board_kernel.create_grant(
-                capsules::i2c_master_slave_driver::DRIVER_NUM,
                 &memory_allocation_capability
             ),
         )
