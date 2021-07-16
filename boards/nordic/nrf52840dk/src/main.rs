@@ -80,6 +80,7 @@ use kernel::hil::i2c::{I2CMaster, I2CSlave};
 use kernel::hil::led::LedLow;
 use kernel::hil::symmetric_encryption::AES128;
 use kernel::hil::time::Counter;
+use kernel::hil::gpio::Configure;
 #[allow(unused_imports)]
 use kernel::hil::usb::Client;
 #[allow(unused_imports)]
@@ -521,6 +522,9 @@ pub unsafe fn main() {
         nrf52840::pinmux::Pinmux::new(I2C_SCL_PIN as u32),
         nrf52840::pinmux::Pinmux::new(I2C_SDA_PIN as u32),
     );
+    
+    nrf52840_peripherals.gpio_port[I2C_SCL_PIN].set_floating_state(kernel::hil::gpio::FloatingState::PullUp);
+    nrf52840_peripherals.gpio_port[I2C_SDA_PIN].set_floating_state(kernel::hil::gpio::FloatingState::PullUp);
     base_peripherals.twi1.set_master_client(i2c_master_slave);
     base_peripherals.twi1.set_slave_client(i2c_master_slave);
     base_peripherals.twi1.set_speed(nrf52840::i2c::Speed::K400);
