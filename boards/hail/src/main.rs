@@ -400,14 +400,13 @@ pub unsafe fn main() {
             i2c_slave_buffer1,
             i2c_slave_buffer2,
             board_kernel.create_grant(
-                capsules::i2c_master_slave_driver::DRIVER_NUM,
                 &memory_allocation_capability
             ),
         )
     );
-    peripherals.twims0.configure(
-        sam4l::pinmux::Pinmux::new(peripherals.pa[24] as u32),
-        sam4l::pinmux::Pinmux::new(peripherals.pa[23] as u32),
+    peripherals.i2c0.configure(
+        sam4l::pm::new(peripherals.pa[24] as u32),
+        sam4l::pm::new(peripherals.pa[23] as u32),
     );
     peripherals.i2c0.set_master_client(i2c_master_slave);
     peripherals.i2c0.set_slave_client(i2c_master_slave);
