@@ -371,6 +371,9 @@ pub unsafe fn main() {
         nrf52832::pinmux::Pinmux::new(I2C_SCL_PIN as u32),
         nrf52832::pinmux::Pinmux::new(I2C_SDA_PIN as u32),
     );
+    use kernel::hil::gpio::Configure;
+    nrf52832_peripherals.gpio_port[I2C_SCL_PIN].set_floating_state(kernel::hil::gpio::FloatingState::PullUp);
+    nrf52832_peripherals.gpio_port[I2C_SDA_PIN].set_floating_state(kernel::hil::gpio::FloatingState::PullUp);
     base_peripherals.twi1.set_master_client(i2c_master_slave);
     base_peripherals.twi1.set_slave_client(i2c_master_slave);
     base_peripherals.twi1.set_speed(nrf52832::i2c::Speed::K400);
