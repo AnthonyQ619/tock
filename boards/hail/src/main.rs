@@ -395,7 +395,7 @@ pub unsafe fn main() {
     let i2c_master_slave = static_init!(
         I2CMasterSlaveDriver,
         I2CMasterSlaveDriver::new(
-            &peripherals.twims0,
+            &peripherals.i2c0,
             i2c_master_buffer,
             i2c_slave_buffer1,
             i2c_slave_buffer2,
