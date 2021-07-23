@@ -13,6 +13,7 @@
 
 use core::cell::Cell;
 use core::cmp;
+use core::fmt::Display::fmt
 use kernel::common::cells::{OptionalCell, TakeCell};
 use kernel::hil;
 use kernel::{CommandReturn, ProcessId, Upcall};
@@ -229,7 +230,7 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
             // TODO verify errors
             debug!("In map!");
             let meee = hil::i2c::I2CSlave::write_receive(self.i2c, buffer, 255);
-            debug!("Does this work? let _: {}", meee );
+            debug!("Does this work? let _: {:#?}", meee );
         });
     }
 }
