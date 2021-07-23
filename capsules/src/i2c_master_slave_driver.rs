@@ -224,9 +224,12 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
         // to receive bytes because this module has a buffer and may as well
         // just let the hardware layer have it. But, if it does happen
         // we can respond.
+        debug!("in write_expected");
         self.slave_buffer1.take().map(|buffer| {
             // TODO verify errors
+            debug!("In map!");
             let _ = hil::i2c::I2CSlave::write_receive(self.i2c, buffer, 255);
+            debug!("Does this work? let _: {}", _);
         });
     }
 }
