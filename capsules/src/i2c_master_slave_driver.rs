@@ -229,9 +229,10 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
         self.slave_buffer1.take().map(|buffer| {
             // TODO verify errors
             debug!("In map!");
-            let meee = hil::i2c::I2CSlave::write_receive(self.i2c, buffer, 255);
-            debug!("Does this work? let _: {:#?}", meee );
+            let _ = hil::i2c::I2CSlave::write_receive(self.i2c, buffer, 255);
+            debug!("After _");
         });
+        debug!("After Map and finished write_expected");
     }
 }
 
