@@ -344,6 +344,7 @@ impl Driver for I2CMasterSlaveDriver<'_> {
         }
         let app = self.app.expect("cannot fail");
 
+        debug!("Command num was: {}", command_num)
         match command_num {
             // Do a write to another I2C device
             1 => {
