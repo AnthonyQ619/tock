@@ -13,7 +13,7 @@
 
 use core::cell::Cell;
 use core::cmp;
-use core::fmt::Display::fmt
+use core::fmt::Display::fmt;
 use kernel::common::cells::{OptionalCell, TakeCell};
 use kernel::hil;
 use kernel::{CommandReturn, ProcessId, Upcall};
