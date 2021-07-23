@@ -17,6 +17,7 @@ use kernel::common::cells::{OptionalCell, TakeCell};
 use kernel::hil;
 use kernel::{CommandReturn, ProcessId, Upcall};
 use kernel::{Driver, ErrorCode, Grant, Read, ReadOnlyAppSlice, ReadWrite, ReadWriteAppSlice};
+use kernel::debug
 
 pub static mut BUFFER1: [u8; 256] = [0; 256];
 pub static mut BUFFER2: [u8; 256] = [0; 256];
