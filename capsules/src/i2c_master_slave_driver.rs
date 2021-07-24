@@ -168,7 +168,9 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
         debug!("Transmission Type: {:?}", transmission_type);
         match transmission_type {
             hil::i2c::SlaveTransmissionType::Write => {
+                debug!("Inside Write!");
                 self.app.map(|app| {
+                    debug!("Inside capsule one!");
                     let _ = self.apps.enter(*app, |app| {
                         app.slave_rx_buffer.mut_map_or(0, move |app_rx| {
                             // Check bounds for write length
@@ -179,12 +181,15 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
                             // than the buffer could lead to array overrun errors in
                             // userspace. The I2C syscall API should pass back lengths.
                             // -pal 3/5/21
+                            
+                            debug!("Writting...");
                             let buf_len = cmp::min(app_rx.len(), buffer.len());
                             let read_len = cmp::min(buf_len, length as usize);
 
                             for (i, c) in buffer[0..read_len].iter_mut().enumerate() {
                                 app_rx[i] = *c;
                             }
+                            debug!("Buffer? {:?}: ", buffer);
 
                             self.slave_buffer1.replace(buffer);
                             0
