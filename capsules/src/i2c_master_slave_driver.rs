@@ -185,6 +185,8 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
                             debug!("Writting...");
                             let buf_len = cmp::min(app_rx.len(), buffer.len());
                             let read_len = cmp::min(buf_len, length as usize);
+                            debug!("buf length: {:?}", buf_len);
+                            debug!("read_len: {:?}", read_len);
 
                             for (i, c) in buffer[0..read_len].iter_mut().enumerate() {
                                 app_rx[i] = *c;
@@ -202,7 +204,7 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
 
             hil::i2c::SlaveTransmissionType::Read => {
                 self.slave_buffer2.replace(buffer);
-
+                debug!("In Read Transmission");
                 // Notify the app that the read finished
                 self.app.map(|app| {
                     let _ = self.apps.enter(*app, |app| {
