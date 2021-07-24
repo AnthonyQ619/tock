@@ -165,7 +165,7 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
         //   - on read, just signal upper layer and replace the read buffer
         //     in this driver
         
-        debug!("Transmission Type: {}", transmission_type);
+        debug!("Transmission Type: {:?}", transmission_type);
         match transmission_type {
             hil::i2c::SlaveTransmissionType::Write => {
                 self.app.map(|app| {
