@@ -10,6 +10,7 @@ use kernel::common::registers::interfaces::{ReadWriteable, Readable, Writeable};
 use kernel::common::registers::{register_bitfields, register_structs, ReadWrite, WriteOnly};
 use kernel::common::StaticRef;
 use kernel::hil;
+use kernel::debug;
 use nrf5x::pinmux::Pinmux;
 
 /// Uninitialized `TWI` instances.
