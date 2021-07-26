@@ -234,7 +234,6 @@ impl hil::i2c::I2CHwSlaveClient for I2CMasterSlaveDriver<'_> {
         // just let the hardware layer have it. But, if it does happen
         // we can respond.
         debug!("in write_expected");
-        debug!("Does slave_buffer1 have anything? : {:?}", self.slave_buffer1.take());
         debug!("Does buffer have anything? : {}", buffer);
         self.slave_buffer1.take().map(|buffer| {
             // TODO verify errors
