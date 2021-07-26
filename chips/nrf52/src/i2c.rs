@@ -126,10 +126,12 @@ impl TWI {
             // If RX started and we don't have a buffer then report
             // read_expected()
             if self.registers.events_rxstarted.is_set(EVENT::EVENT) {
+                debug!("Rx event started!");
                 self.registers.events_rxstarted.write(EVENT::EVENT::CLEAR);
                 self.slave_client
                     .map(|client| match self.slave_read_buf.take() {
                         None => {
+                            debug!("calling write_expected");
                             client.write_expected();
                         }
                         Some(_buf) => {}
@@ -139,9 +141,11 @@ impl TWI {
             if self.registers.events_write.is_set(EVENT::EVENT) {
                 self.registers.events_write.write(EVENT::EVENT::CLEAR);
                 let length = self.registers.rxd_amount.read(AMOUNT::AMOUNT) as u8;
+                debug!("event write is set");
                 self.slave_client.map(|client| match self.buf.take() {
                     None => (),
                     Some(buf) => {
+                        debug!("setting up buf, transmission type, and length");
                         client.command_complete(
                             buf,
                             length,
@@ -154,6 +158,7 @@ impl TWI {
             if self.registers.events_read.is_set(EVENT::EVENT) {
                 self.registers.events_read.write(EVENT::EVENT::CLEAR);
                 let length = self.registers.txd_amount.read(AMOUNT::AMOUNT) as u8;
+                debug!("events_read is set");
                 self.slave_client
                     .map(|client| match self.slave_read_buf.take() {
                         None => (),
