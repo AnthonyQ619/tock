@@ -6,11 +6,11 @@ use core::fmt;
 use crate::capabilities::ProcessManagementCapability;
 use crate::config;
 use crate::debug;
-use crate::platform::Chip;
+use crate::kernel::Kernel;
+use crate::platform::chip::Chip;
 use crate::process::Process;
 use crate::process_policies::ProcessFaultPolicy;
 use crate::process_standard::ProcessStandard;
-use crate::sched::Kernel;
 
 /// Errors that can occur when trying to load and create processes.
 pub enum ProcessLoadError {
@@ -113,7 +113,7 @@ impl fmt::Debug for ProcessLoadError {
 /// allocated number of processes are created. This buffer is a non-static slice,
 /// ensuring that this code cannot hold onto the slice past the end of this function
 /// (instead, processes store a pointer and length), which necessary for later
-/// creation of `AppSlice`'s in this memory region to be sound.
+/// creation of `ProcessBuffer`s in this memory region to be sound.
 /// A reference to each process is stored in the provided `procs` array.
 /// How process faults are handled by the
 /// kernel must be provided and is assigned to every created process.

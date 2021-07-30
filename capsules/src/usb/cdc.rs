@@ -4,7 +4,6 @@
 
 use core::cell::Cell;
 use core::cmp;
-use kernel::ErrorCode;
 
 use super::descriptors;
 use super::descriptors::Buffer64;
@@ -15,16 +14,17 @@ use super::descriptors::InterfaceDescriptor;
 use super::descriptors::TransferDirection;
 use super::usbc_client_ctrl::ClientCtrl;
 
-use kernel::common::cells::OptionalCell;
-use kernel::common::cells::TakeCell;
-use kernel::common::cells::VolatileCell;
-use kernel::common::dynamic_deferred_call::{
+use kernel::dynamic_deferred_call::{
     DeferredCallHandle, DynamicDeferredCall, DynamicDeferredCallClient,
 };
 use kernel::hil;
-use kernel::hil::time::{Alarm, AlarmClient};
+use kernel::hil::time::{Alarm, AlarmClient, ConvertTicks};
 use kernel::hil::uart;
 use kernel::hil::usb::TransferType;
+use kernel::utilities::cells::OptionalCell;
+use kernel::utilities::cells::TakeCell;
+use kernel::utilities::cells::VolatileCell;
+use kernel::ErrorCode;
 
 /// Identifying number for the endpoint when transferring data from us to the
 /// host.
@@ -360,7 +360,7 @@ impl<'a, U: hil::usb::UsbController<'a>, A: 'a + Alarm<'a>> hil::usb::Client<'a>
 
         self.timeout_alarm.set_alarm(
             self.timeout_alarm.now(),
-            A::ticks_from_ms(CDC_BUFFER_TIMEOUT_MS),
+            self.timeout_alarm.ticks_from_ms(CDC_BUFFER_TIMEOUT_MS),
         );
     }
 
@@ -749,10 +749,4 @@ impl<'a, U: hil::usb::UsbController<'a>, A: 'a + Alarm<'a>> DynamicDeferredCallC
             });
         }
     }
-}
-
-impl<'a, U: hil::usb::UsbController<'a>, A: 'a + Alarm<'a>> uart::Uart<'a> for CdcAcm<'a, U, A> {}
-impl<'a, U: hil::usb::UsbController<'a>, A: 'a + Alarm<'a>> uart::UartData<'a>
-    for CdcAcm<'a, U, A>
-{
 }

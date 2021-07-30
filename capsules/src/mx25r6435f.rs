@@ -1,4 +1,4 @@
-//! Driver for the MX25R6435F flash chip.
+//! SyscallDriver for the MX25R6435F flash chip.
 //!
 //! <http://www.macronix.com/en-us/products/NOR-Flash/Serial-NOR-Flash/Pages/spec.aspx?p=MX25R6435F>
 //!
@@ -50,10 +50,11 @@
 
 use core::cell::Cell;
 use core::ops::{Index, IndexMut};
-use kernel::common::cells::OptionalCell;
-use kernel::common::cells::TakeCell;
 use kernel::debug;
 use kernel::hil;
+use kernel::hil::time::ConvertTicks;
+use kernel::utilities::cells::OptionalCell;
+use kernel::utilities::cells::TakeCell;
 use kernel::ErrorCode;
 
 pub static mut TXBUFFER: [u8; PAGE_SIZE as usize + 4] = [0; PAGE_SIZE as usize + 4];
@@ -405,7 +406,7 @@ impl<
                 self.txbuffer.replace(write_buffer);
                 // Datasheet says erase takes 58 ms on average. So we wait that
                 // long.
-                let delay = A::ticks_from_ms(58);
+                let delay = self.alarm.ticks_from_ms(58);
                 self.alarm.set_alarm(self.alarm.now(), delay);
             }
             State::EraseSectorCheckDone { operation } => {
@@ -502,7 +503,7 @@ impl<
                 self.txbuffer.replace(write_buffer);
                 // Datasheet says write page takes 3.2 ms on average. So we wait
                 // that long.
-                let delay = A::ticks_from_us(3200);
+                let delay = self.alarm.ticks_from_us(3200);
                 self.alarm.set_alarm(self.alarm.now(), delay);
             }
             State::WriteSectorWaitDone {

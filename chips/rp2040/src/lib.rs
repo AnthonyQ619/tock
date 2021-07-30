@@ -7,6 +7,8 @@ pub mod clocks;
 pub mod gpio;
 pub mod interrupts;
 pub mod resets;
+pub mod spi;
+pub mod sysinfo;
 pub mod timer;
 pub mod uart;
 pub mod watchdog;
