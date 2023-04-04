@@ -32,4 +32,4 @@ title = "Test Configuration Sample"
     [test.all]
     # List the application(s) that will be installed for tests
     # Demo
-    app = ["i2c-master-rx", "ble"]
+    app = ["i2c-master-rx", "gpio"]
